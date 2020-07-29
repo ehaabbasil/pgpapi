@@ -9,7 +9,7 @@ from fastpgp.keys import KEYS
 
 __title__ = 'FastPGP'
 __description__ = 'Secure communication API using PGP'
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 
 
 class UnregisteredKeyError(Exception):
@@ -21,24 +21,27 @@ class Message(BaseModel):
     blob: Optional[str]
 
 
+class FingerprintMessage(BaseModel):
+    fingerprint: str
+    blob: str
+
+
 def encrypt(data: str, pub_key: str) -> str:
     msg = PGPMessage.new(data)
     pub_key_obj = PGPKey.from_blob(pub_key)[0]
     return str(pub_key_obj.encrypt(msg))
 
 
-def decrypt(encrypted_data: str, pub_key: str):
+def decrypt(encrypted_data: str, fingerprint: str):
     encrypted_msg = PGPMessage.from_blob(encrypted_data)
 
-    pub_key_obj = PGPKey.from_blob(pub_key)[0]
-    user = pub_key_obj.userids[0].name
-    if user not in KEYS:
+    if fingerprint not in KEYS:
         raise UnregisteredKeyError()
-
-    key = KEYS[user]
+    key = KEYS[fingerprint]
+    user = key.userids[0].name
     msg = key.decrypt(encrypted_msg)
 
-    return str(msg.message)
+    return user, str(msg.message)
 
 
 app = FastAPI(title=__title__, description=__description__, version=__version__)
@@ -59,7 +62,7 @@ async def recieve(msg: Message):
 
 
 @app.post('/pgp/send')
-async def send(msg: Message):
+async def send(msg: FingerprintMessage):
     '''
     ## Send data to server
 
@@ -67,7 +70,8 @@ async def send(msg: Message):
     * Server finds the paired private key
     * The encrypted data is in the Message.blob
     '''
-    data = decrypt(msg.blob, msg.publickey)
+    user, data = decrypt(msg.blob, msg.fingerprint)
 
     print("[INFO] Successfully get data from client:")
+    print("Client name: %s" % user)
     print(data)

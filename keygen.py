@@ -14,8 +14,11 @@ def generate(username: str):
     )
 
     secho("Primary key, to be saved in server", fg=colors.BLUE)
+    secho(primary_key.fingerprint, fg=colors.RED)
     secho(str(primary_key), fg=colors.YELLOW)
+
     secho("Public key, to be saved in server", fg=colors.BLUE)
+    secho(primary_key.fingerprint, fg=colors.RED)
     secho(str(primary_key.pubkey), fg=colors.GREEN)
 
 
