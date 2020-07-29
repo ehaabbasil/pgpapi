@@ -1,4 +1,5 @@
 fastapi
 httpx
 pgpy
+typer
 uvicorn
