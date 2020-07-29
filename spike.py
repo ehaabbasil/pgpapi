@@ -12,12 +12,10 @@ USER = {
 
 key = pgpy.PGPKey.new(ALGORITHM, 4096)
 uid = pgpy.PGPUID.new(USER['name'], comment=USER['comment'], email=USER['email'])
-key.add_uid(uid, usage={KeyFlags.Sign, KeyFlags.EncryptCommunications, KeyFlags.EncryptStorage},
-            hashes=[HashAlgorithm.SHA256, HashAlgorithm.SHA384, HashAlgorithm.SHA512, HashAlgorithm.SHA224],
-            ciphers=[SymmetricKeyAlgorithm.AES256, SymmetricKeyAlgorithm.AES192, SymmetricKeyAlgorithm.AES128],
-            compression=[CompressionAlgorithm.ZLIB, CompressionAlgorithm.BZ2, CompressionAlgorithm.ZIP, CompressionAlgorithm.Uncompressed])
-# subkey = pgpy.PGPKey.new(ALGORITHM, 4096)
-# key.add_subkey(subkey, usage={KeyFlags.Authentication})
+key.add_uid(uid, usage={KeyFlags.EncryptCommunications},
+            hashes=[HashAlgorithm.SHA512],
+            ciphers=[SymmetricKeyAlgorithm.AES256],
+            compression=[CompressionAlgorithm.ZLIB])
 
 pub_key_str = str(key.pubkey)
 
