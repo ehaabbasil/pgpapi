@@ -2,23 +2,18 @@ from typing import Optional
 
 from fastapi import FastAPI
 from pydantic import BaseModel
-from pgpy import PGPKey, PGPMessage, PGPUID
-from pgpy.constants import PubKeyAlgorithm, KeyFlags, HashAlgorithm, SymmetricKeyAlgorithm, CompressionAlgorithm
+from pgpy import PGPKey, PGPMessage
+
+from fastpgp.keys import KEYS
 
 
-__author__ = 'Sriram G.'
 __title__ = 'FastPGP'
-__version__ = '0.0.1'
-__description__ = 'PGP communication API'
-__email__ = 'sriram@sriramg.com'
+__description__ = 'Secure communication API using PGP'
+__version__ = '0.0.2'
 
-ALGORITHM = PubKeyAlgorithm.RSAEncryptOrSign
-PRIMARY_KEY = PGPKey.new(ALGORITHM, 4096)
-UID = PGPUID.new(__author__, comment=__description__, email=__email__)
-PRIMARY_KEY.add_uid(UID, usage={KeyFlags.EncryptCommunications},
-            hashes=[HashAlgorithm.SHA512],
-            ciphers=[SymmetricKeyAlgorithm.AES256],
-            compression=[CompressionAlgorithm.ZIP])
+
+class UnregisteredKeyError(Exception):
+    pass
 
 
 class Message(BaseModel):
@@ -32,9 +27,17 @@ def encrypt(data: str, pub_key: str) -> str:
     return str(pub_key_obj.encrypt(msg))
 
 
-def decrypt(encrypted_data: str, key: PGPKey):
+def decrypt(encrypted_data: str, pub_key: str):
     encrypted_msg = PGPMessage.from_blob(encrypted_data)
+
+    pub_key_obj = PGPKey.from_blob(pub_key)[0]
+    user = pub_key_obj.userids[0].name
+    if user not in KEYS:
+        raise UnregisteredKeyError()
+
+    key = KEYS[user]
     msg = key.decrypt(encrypted_msg)
+
     return str(msg.message)
 
 
@@ -55,27 +58,16 @@ async def recieve(msg: Message):
     return msg
 
 
-@app.get('/pgp/send')
-async def get_pubkey_for_send():
-    '''
-    ## Get public key for sending data to server
-
-    * Client asks public key to be used for encryption
-    '''
-    msg = Message(publickey=str(PRIMARY_KEY.pubkey))
-    return msg
-
-
 @app.post('/pgp/send')
 async def send(msg: Message):
     '''
     ## Send data to server
 
-    * Client encrypts data using the public key - got from the above GET request
+    * Client encrypts data using the public key
+    * Server finds the paired private key
     * The encrypted data is in the Message.blob
     '''
-    assert msg.publickey == str(PRIMARY_KEY.pubkey)
-    data = decrypt(msg.blob, PRIMARY_KEY)
+    data = decrypt(msg.blob, msg.publickey)
 
     print("[INFO] Successfully get data from client:")
     print(data)
