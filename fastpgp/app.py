@@ -6,14 +6,15 @@ from pgpy import PGPKey, PGPMessage, PGPUID
 from pgpy.constants import PubKeyAlgorithm, KeyFlags, HashAlgorithm, SymmetricKeyAlgorithm, CompressionAlgorithm
 
 
+__author__ = 'Sriram G.'
+__title__ = 'FastPGP'
+__version__ = '0.0.1'
+__description__ = 'PGP communication API'
+__email__ = 'sriram@sriramg.com'
+
 ALGORITHM = PubKeyAlgorithm.RSAEncryptOrSign
-USER = {
-    'name': 'Sriram G.',
-    'comment': 'PGP communication API',
-    'email': 'sriram@sriramg.com'
-}
 PRIMARY_KEY = PGPKey.new(ALGORITHM, 4096)
-UID = PGPUID.new(USER['name'], comment=USER['comment'], email=USER['email'])
+UID = PGPUID.new(__author__, comment=__description__, email=__email__)
 PRIMARY_KEY.add_uid(UID, usage={KeyFlags.EncryptCommunications},
             hashes=[HashAlgorithm.SHA512],
             ciphers=[SymmetricKeyAlgorithm.AES256],
@@ -37,10 +38,10 @@ def decrypt(encrypted_data: str, key: PGPKey):
     return str(msg.message)
 
 
-app = FastAPI()
+app = FastAPI(title=__title__, description=__description__, version=__version__)
 
 
-@app.post("/pgp/recieve")
+@app.post('/pgp/recieve')
 async def recieve(msg: Message):
     '''
     ## Recieve data from server
@@ -49,12 +50,12 @@ async def recieve(msg: Message):
     * Server encrypts data using the public key
     * The response includes encrypted blob
     '''
-    data = "This is some message from server to client."
+    data = 'This is some message from server to client.'
     msg.blob = encrypt(data, msg.publickey)
     return msg
 
 
-@app.get("/pgp/send")
+@app.get('/pgp/send')
 async def get_pubkey_for_send():
     '''
     ## Get public key for sending data to server
@@ -65,7 +66,7 @@ async def get_pubkey_for_send():
     return msg
 
 
-@app.post("/pgp/send")
+@app.post('/pgp/send')
 async def send(msg: Message):
     '''
     ## Send data to server
