@@ -18,7 +18,7 @@ UID = PGPUID.new(__author__, comment=__description__, email=__email__)
 PRIMARY_KEY.add_uid(UID, usage={KeyFlags.EncryptCommunications},
             hashes=[HashAlgorithm.SHA512],
             ciphers=[SymmetricKeyAlgorithm.AES256],
-            compression=[CompressionAlgorithm.ZLIB])
+            compression=[CompressionAlgorithm.ZIP])
 
 
 class Message(BaseModel):
@@ -76,5 +76,6 @@ async def send(msg: Message):
     '''
     assert msg.publickey == str(PRIMARY_KEY.pubkey)
     data = decrypt(msg.blob, PRIMARY_KEY)
-    msg.blob = data
-    return msg
+
+    print("[INFO] Successfully get data from client:")
+    print(data)
