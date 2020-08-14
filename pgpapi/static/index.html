@@ -19,6 +19,7 @@
 <body>
     <div class="main">
         <h1>1. Generate key pair</h1>
+        <p>The client (OpenPGP.js in this frontend) generates public/private key pair. Here's the generated key pair.</p>
         <button id="btn-keygen">Generate</button>
         <div class="key">
             <h3>Public key</h3>
@@ -30,6 +31,7 @@
         </div>
 
         <h2>2. Get encrypted message</h2>
+        <p>The clients send a request including the generated public key to server. The sever sends back a response including encrypted message using PGPy. Here's the encrypted message sent from server.</p>
         <button id="btn-get">Get</button>
         <div class="msg">
             <h3>Encrypted message</h3>
@@ -37,6 +39,7 @@
         </div>
 
         <h2>3. Decrypt the message</h2>
+        <p>The client decrypt the message with the private key. Here's the decrypted message.</p>
         <button id="btn-decrypt">Decrypt</button>
         <div class="msg">
             <h3>Decrypted message</h3>
