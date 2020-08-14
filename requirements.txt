@@ -4,3 +4,4 @@ httpx
 pgpy
 typer
 uvicorn
+gunicorn
