@@ -16,8 +16,6 @@
 <body>
     <div class="main">
         <button id="btn-keygen">Generate key pair</button>
-        <button id="btn-get">Get encrypted message</button>
-        <button id="btn-decrypt">Decrypt</button>
         <div class="key">
             <h2>Public key</h2>
             <textarea id="public-key" rows=10 cols=66 readonly></textarea>
@@ -26,14 +24,12 @@
             <h2>Private key</h2>
             <textarea id="private-key" rows=10 cols=66 readonly></textarea>
         </div>
-        <div class="msg">
-            <h2>Message on server</h2>
-            <textarea id="original-msg" rows=10 cols=66 readonly></textarea>
-        </div>
+        <button id="btn-get">Get encrypted message</button>
         <div class="msg">
             <h2>Encrypted message</h2>
             <textarea id="encrypted-msg" rows=10 cols=66 readonly></textarea>
         </div>
+        <button id="btn-decrypt">Decrypt</button>
         <div class="msg">
             <h2>Decrypted message</h2>
             <textarea id="decrypted-msg" rows=10 cols=66 readonly></textarea>
@@ -49,7 +45,6 @@
               keyPrivate = document.getElementById('private-key'),
               keyPublic = document.getElementById('public-key'),
 
-              msgOriginal = document.getElementById('original-msg'),
               msgEncrypted = document.getElementById('encrypted-msg'),
               msgDecrypted = document.getElementById('decrypted-msg')
 
@@ -60,28 +55,13 @@
             decrypted: null
         }
 
-        const testEncryptDecrypt = async () => {
-            const { message } = await openpgp.encrypt({
-                message: openpgp.message.fromText('Lovely Ggomee'), // input as Message object
-                passwords: ['my password'],                                             // multiple passwords possible
-                armor: false                                                             // don't ASCII armor (for Uint8Array output)
-            });
-            const encrypted = message.packets.write(); // get raw encrypted packets as Uint8Array
-            console.log(encrypted)
-
-            const { data: decrypted } = await openpgp.decrypt({
-                message: await openpgp.message.read(encrypted), // parse encrypted bytes
-                passwords: ['my password'],                    // decrypt with password
-                format: 'text'                                // output as Uint8Array
-            });
-            console.log(decrypted); // Uint8Array([0x01, 0x01, 0x01])
-        }
+        const password = 'super long and hard to guess secret'
 
         const keyGen = async () => {
             const { privateKeyArmored, publicKeyArmored, revocationCertificate } = await openpgp.generateKey({
                 userIds: [{ name: 'Jon Smith', email: 'jon@example.com' }],
                 curve: 'ed25519',
-                passphrase: 'super long and hard to guess secret'
+                passphrase: password
             })
 
             keyPrivate.textContent = privateKeyArmored
@@ -92,7 +72,7 @@
             dataBuffer.public = publicKeyArmored
         }
 
-        const getEncrypted = async() => {
+        const getEncrypted = async () => {
             const xhr = new XMLHttpRequest(),
                   url = '/pgp/recieve'
             xhr.open("POST", url, true)
@@ -107,8 +87,21 @@
             xhr.send(JSON.stringify(data))
         }
 
+        const decrypt = async () => {
+            const { keys: [privateKey] } = await openpgp.key.readArmored(dataBuffer.private)
+            await privateKey.decrypt(password)
+            const { data: decrypted } = await openpgp.decrypt({
+                message: await openpgp.message.readArmored(dataBuffer.encrypted),
+                publicKeys: (await openpgp.key.readArmored(dataBuffer.public)).keys,
+                privateKeys: [privateKey]
+            })
+            dataBuffer.decrypted = decrypted
+            msgDecrypted.textContent = dataBuffer.decrypted
+        }
+
         btnKeygen.onclick = keyGen
         btnGet.onclick = getEncrypted
+        btnDecrypt.onclick = decrypt
     </script>
 </body>
 </html>
