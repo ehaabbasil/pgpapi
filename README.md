@@ -1,4 +1,4 @@
-# FastPGP
+# PGPApi
 
 * Web framework: [FastAPI](https://fastapi.tiangolo.com/)
 * Python PGP library: [PGPy](https://pgpy.readthedocs.io/en/latest/)
@@ -18,7 +18,7 @@ pip install -r requirements.txt
 Run the server using Uvicorn,
 
 ```sh
-uvicorn fastpgp.app:app --reload --host 127.0.0.1 --port 8000
+uvicorn pgpapi.app:app --reload --host 127.0.0.1 --port 8000
 ```
 
 Check the API endpoints on [API Doc](http://localhost:8000/docs)
