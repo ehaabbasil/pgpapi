@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>PGP Test Page</title>
+</head>
+<body>
+
+    <script src="/assets/openpgp/openpgp.min.js"></script>
+    <script>
+        (async () => {
+            const { message } = await openpgp.encrypt({
+                message: openpgp.message.fromText('Lovely Ggomee'), // input as Message object
+                passwords: ['my password'],                                             // multiple passwords possible
+                armor: false                                                             // don't ASCII armor (for Uint8Array output)
+            });
+            const encrypted = message.packets.write(); // get raw encrypted packets as Uint8Array
+            console.log(encrypted)
+
+            const { data: decrypted } = await openpgp.decrypt({
+                message: await openpgp.message.read(encrypted), // parse encrypted bytes
+                passwords: ['my password'],                    // decrypt with password
+                format: 'text'                                // output as Uint8Array
+            });
+            console.log(decrypted); // Uint8Array([0x01, 0x01, 0x01])
+        })();
+
+        (async () => {
+            const { privateKeyArmored, publicKeyArmored, revocationCertificate } = await openpgp.generateKey({
+                userIds: [{ name: 'Jon Smith', email: 'jon@example.com' }], // you can pass multiple user IDs
+                curve: 'ed25519',                                           // ECC curve name
+                passphrase: 'super long and hard to guess secret'           // protects the private key
+            });
+
+            console.log(privateKeyArmored);     // '-----BEGIN PGP PRIVATE KEY BLOCK ... '
+            console.log(publicKeyArmored);      // '-----BEGIN PGP PUBLIC KEY BLOCK ... '
+            console.log(revocationCertificate); // '-----BEGIN PGP PUBLIC KEY BLOCK ... '
+        })();
+    </script>
+</body>
+</html>

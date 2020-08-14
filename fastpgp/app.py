@@ -1,6 +1,9 @@
+import pathlib
 from typing import Optional
 
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from pgpy import PGPKey, PGPMessage
 
@@ -10,6 +13,8 @@ from fastpgp.keys import KEYS
 __title__ = 'FastPGP'
 __description__ = 'Secure communication API using PGP'
 __version__ = '0.0.3'
+CUR_ABSPATH = pathlib.Path(__file__).parent.absolute()
+STATIC = CUR_ABSPATH.joinpath('static')
 
 
 class UnregisteredKeyError(Exception):
@@ -45,6 +50,12 @@ def decrypt(encrypted_data: str, fingerprint: str):
 
 
 app = FastAPI(title=__title__, description=__description__, version=__version__)
+app.mount("/assets", StaticFiles(directory=STATIC), name="static")
+
+
+@app.get("/")
+async def root():
+    return FileResponse(STATIC.joinpath('index.html'))
 
 
 @app.post('/pgp/recieve')

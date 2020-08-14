@@ -1,3 +1,4 @@
+aiofiles
 fastapi
 httpx
 pgpy
