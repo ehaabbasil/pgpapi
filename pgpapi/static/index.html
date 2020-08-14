@@ -82,7 +82,7 @@
 
         const getEncrypted = async () => {
             const xhr = new XMLHttpRequest(),
-                  url = '/pgp/recieve'
+                  url = '/getencrypteddata'
             xhr.open("POST", url, true)
             xhr.setRequestHeader("Content-Type", "application/json")
             xhr.onreadystatechange = function () {
