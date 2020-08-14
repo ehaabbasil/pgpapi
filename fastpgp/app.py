@@ -54,7 +54,7 @@ app.mount("/assets", StaticFiles(directory=STATIC), name="static")
 
 
 @app.get("/")
-async def root():
+async def home():
     return FileResponse(STATIC.joinpath('index.html'))
 
 
@@ -67,22 +67,7 @@ async def recieve(msg: Message):
     * Server encrypts data using the public key
     * The response includes encrypted blob
     '''
-    data = 'This is some message from server to client.'
+    with open(STATIC.joinpath('data.txt')) as f:
+        data = f.read()
     msg.blob = encrypt(data, msg.publickey)
     return msg
-
-
-@app.post('/pgp/send')
-async def send(msg: FingerprintMessage):
-    '''
-    ## Send data to server
-
-    * Client encrypts data using the public key
-    * Server finds the paired private key
-    * The encrypted data is in the Message.blob
-    '''
-    user, data = decrypt(msg.blob, msg.fingerprint)
-
-    print("[INFO] Successfully get data from client:")
-    print("Client name: %s" % user)
-    print(data)

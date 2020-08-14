@@ -11,27 +11,35 @@
         .main > div {
             min-height: 48px;
         }
+        .main h3 {
+            margin-bottom: 0;
+        }
     </style>
 </head>
 <body>
     <div class="main">
-        <button id="btn-keygen">Generate key pair</button>
+        <h1>1. Generate key pair</h1>
+        <button id="btn-keygen">Generate</button>
         <div class="key">
-            <h2>Public key</h2>
+            <h3>Public key</h3>
             <textarea id="public-key" rows=10 cols=66 readonly></textarea>
         </div>
         <div class="key">
-            <h2>Private key</h2>
+            <h3>Private key</h3>
             <textarea id="private-key" rows=10 cols=66 readonly></textarea>
         </div>
-        <button id="btn-get">Get encrypted message</button>
+
+        <h2>2. Get encrypted message</h2>
+        <button id="btn-get">Get</button>
         <div class="msg">
-            <h2>Encrypted message</h2>
+            <h3>Encrypted message</h3>
             <textarea id="encrypted-msg" rows=10 cols=66 readonly></textarea>
         </div>
+
+        <h2>3. Decrypt the message</h2>
         <button id="btn-decrypt">Decrypt</button>
         <div class="msg">
-            <h2>Decrypted message</h2>
+            <h3>Decrypted message</h3>
             <textarea id="decrypted-msg" rows=10 cols=66 readonly></textarea>
         </div>
     </div>
