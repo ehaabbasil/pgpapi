@@ -3,12 +3,64 @@
 <head>
     <meta charset="utf-8">
     <title>PGP Test Page</title>
+    <style type="text/css">
+        .main {
+            width: 80vw;
+            margin: 0 auto;
+        }
+        .main > div {
+            min-height: 48px;
+        }
+    </style>
 </head>
 <body>
+    <div class="main">
+        <button id="btn-keygen">Generate key pair</button>
+        <button id="btn-get">Get encrypted message</button>
+        <button id="btn-decrypt">Decrypt</button>
+        <div class="key">
+            <h2>Public key</h2>
+            <textarea id="public-key" rows=10 cols=66 readonly></textarea>
+        </div>
+        <div class="key">
+            <h2>Private key</h2>
+            <textarea id="private-key" rows=10 cols=66 readonly></textarea>
+        </div>
+        <div class="msg">
+            <h2>Message on server</h2>
+            <textarea id="original-msg" rows=10 cols=66 readonly></textarea>
+        </div>
+        <div class="msg">
+            <h2>Encrypted message</h2>
+            <textarea id="encrypted-msg" rows=10 cols=66 readonly></textarea>
+        </div>
+        <div class="msg">
+            <h2>Decrypted message</h2>
+            <textarea id="decrypted-msg" rows=10 cols=66 readonly></textarea>
+        </div>
+    </div>
 
     <script src="/assets/openpgp/openpgp.min.js"></script>
     <script>
-        (async () => {
+        const btnKeygen = document.getElementById('btn-keygen'),
+              btnGet = document.getElementById('btn-get'),
+              btnDecrypt = document.getElementById('btn-decrypt'),
+
+              keyPrivate = document.getElementById('private-key'),
+              keyPublic = document.getElementById('public-key'),
+
+              msgOriginal = document.getElementById('original-msg'),
+              msgEncrypted = document.getElementById('encrypted-msg'),
+              msgDecrypted = document.getElementById('decrypted-msg')
+
+        const dataBuffer = {
+            public: null,
+            private: null,
+            encrypted: null,
+            decrypted: null
+        }
+
+        const testEncryptDecrypt = async () => {
             const { message } = await openpgp.encrypt({
                 message: openpgp.message.fromText('Lovely Ggomee'), // input as Message object
                 passwords: ['my password'],                                             // multiple passwords possible
@@ -23,19 +75,40 @@
                 format: 'text'                                // output as Uint8Array
             });
             console.log(decrypted); // Uint8Array([0x01, 0x01, 0x01])
-        })();
+        }
 
-        (async () => {
+        const keyGen = async () => {
             const { privateKeyArmored, publicKeyArmored, revocationCertificate } = await openpgp.generateKey({
-                userIds: [{ name: 'Jon Smith', email: 'jon@example.com' }], // you can pass multiple user IDs
-                curve: 'ed25519',                                           // ECC curve name
-                passphrase: 'super long and hard to guess secret'           // protects the private key
-            });
+                userIds: [{ name: 'Jon Smith', email: 'jon@example.com' }],
+                curve: 'ed25519',
+                passphrase: 'super long and hard to guess secret'
+            })
 
-            console.log(privateKeyArmored);     // '-----BEGIN PGP PRIVATE KEY BLOCK ... '
-            console.log(publicKeyArmored);      // '-----BEGIN PGP PUBLIC KEY BLOCK ... '
-            console.log(revocationCertificate); // '-----BEGIN PGP PUBLIC KEY BLOCK ... '
-        })();
+            keyPrivate.textContent = privateKeyArmored
+            keyPublic.textContent = publicKeyArmored
+            // console.log(revocationCertificate)
+
+            dataBuffer.private = privateKeyArmored
+            dataBuffer.public = publicKeyArmored
+        }
+
+        const getEncrypted = async() => {
+            const xhr = new XMLHttpRequest(),
+                  url = '/pgp/recieve'
+            xhr.open("POST", url, true)
+            xhr.setRequestHeader("Content-Type", "application/json")
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    dataBuffer.encrypted = JSON.parse(xhr.responseText).blob
+                    msgEncrypted.textContent = dataBuffer.encrypted
+                }
+            }
+            data = {'publickey': dataBuffer.public, 'blob': ''}
+            xhr.send(JSON.stringify(data))
+        }
+
+        btnKeygen.onclick = keyGen
+        btnGet.onclick = getEncrypted
     </script>
 </body>
 </html>
