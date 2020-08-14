@@ -10,7 +10,7 @@ from pgpy import PGPKey, PGPMessage
 
 __title__ = 'PGP API'
 __description__ = 'Secure communication API using PGP'
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 CUR_ABSPATH = pathlib.Path(__file__).parent.absolute()
 STATIC = CUR_ABSPATH.joinpath('static')
 
