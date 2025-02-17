@@ -1,6 +1,6 @@
 # PGPApi
 
-Live Demo: http://pgpapi.herokuapp.com/
+Live Demo: https://pgpapi-b933cbe487b5.herokuapp.com/
 
 * Web framework: [FastAPI](https://fastapi.tiangolo.com/)
 * Python PGP library: [PGPy](https://pgpy.readthedocs.io/en/latest/)
